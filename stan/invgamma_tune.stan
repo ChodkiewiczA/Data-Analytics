@@ -1,0 +1,31 @@
+functions {
+    vector rightGamma (vector y, vector theta, real[] x_r, int[] x_i) {
+        vector[3] inv_gamma;
+        inv_gamma[1] = inv_gamma_cdf(theta[1], exp(y[1]), exp(y[2])) - exp(y[3]);
+        inv_gamma[2] = inv_gamma_cdf(theta[2], exp(y[1]), exp(y[2])) - exp(y[3]) - 0.98;
+        inv_gamma[3] = exp(y[1])/exp(y[2]) - 7;
+        return inv_gamma;
+    }
+}
+
+data {
+    real lowerBound;
+    real upperBound;
+    real alphaGuess;
+    real betaGuess;
+    real probGuess;
+}
+
+transformed data {
+    vector[3] y;
+    real x_r[0];
+    int x_i[0];
+    vector[2] theta = [lowerBound, upperBound]';
+    vector[3] y_guess = [log(alphaGuess), log(betaGuess), log(probGuess)]';
+    y = algebra_solver(rightGamma, y_guess, theta, x_r, x_i);
+}
+
+generated quantities {
+    real alpha = exp(y[1]);
+    real beta = exp(y[2]);
+}
